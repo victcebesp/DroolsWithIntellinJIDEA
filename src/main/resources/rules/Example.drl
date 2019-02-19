@@ -1,0 +1,8 @@
+package rules;
+dialect  "mvel"
+
+rule "Hello world"
+    when
+
+    then
+end

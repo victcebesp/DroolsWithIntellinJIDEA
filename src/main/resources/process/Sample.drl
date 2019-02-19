@@ -1,0 +1,113 @@
+package com.sample
+ 
+import com.sample.DroolsTest.Message;
+import function com.sample.Registro.pantalla;
+
+rule "Abstrae edad joven"
+  ruleflow-group "abstrae"
+  lock-on-active true
+  when
+  	$p: Perfil( edad < 35 && edad > 17)
+  then
+
+    modify($p){
+    	setRango(Perfil.JOVEN);
+    }
+    pantalla( "abst. "+$p.toString() );
+end
+
+rule "Abstrae familia"
+  ruleflow-group "abstrae"
+  lock-on-active true
+  when
+  	$p: Perfil( npersonas > 2)
+  then
+
+    modify($p){
+    	setTipoViaje(Perfil.FAMILIAR);
+    }
+    pantalla( "Abstrae: "+$p.toString() );
+end
+
+
+rule "marca peligroso ok"
+  ruleflow-group "verifica"
+  lock-on-active true
+  when
+    $n: Norma(nombre == "peligro", activo == true )
+  	$p: Perfil( tipoViaje == Perfil.SOLITARIO && rango == Perfil.JOVEN)
+  then
+
+    modify($n){
+    	setValor ( Norma.ALTA);
+    }
+    pantalla( "Verifica: norma peligro -ALTA. "+$n.toString() );
+end
+
+rule "marca peligroso noOk"
+  ruleflow-group "verifica"
+  lock-on-active true
+  when
+    $n: Norma(nombre == "peligro", activo == true )
+  	$p: Perfil( ninyos == true || rango == Perfil.MAYOR)
+  then
+
+    modify($n){
+    	setValor ( Norma.BAJA);
+    }
+    pantalla( "Verifica: norma peligro -BAJA. "+$n.toString() );
+end
+
+
+rule "marca disponbi horaria media"
+  ruleflow-group "verifica"
+  lock-on-active true
+  when
+    $n: Norma(nombre == "horario", activo == true )
+  	$p: Perfil( ndias > 2 && ndias <7)
+  then
+
+    modify($n){
+    	setValor ( Norma.MEDIA);
+    }
+    pantalla( "Verifica: norma HORARIO -MEDIA. "+$n.toString() );
+end
+
+rule "activa peligroso "
+  ruleflow-group "especifica"
+  lock-on-active true
+  when
+    $n: Norma (nombre == "peligro", activo == false )
+  	$p: Actividad( tipo == "AEREA")
+  then
+    modify($n){
+    	setActivo( true);
+    }
+    pantalla( "Especifica: norma peligro -activa. "+$n.toString() );
+end
+
+
+rule "Match 1 aerea ok "
+  ruleflow-group "match"
+  lock-on-active true
+  when
+    $p: Actividad( tipo == "AEREA")
+    Norma(nombre == "peligro", activo == true, valor == Norma.ALTA )
+  	Norma(nombre == "horario", activo == true, valor >= Norma.MEDIA )
+  	
+  then
+    pantalla( "Actividad OK."+ $p.getNombre() );
+    insert(new Respuesta("ok: "+ $p.getNombre()));   
+end
+
+
+rule "Match no hay respuesta "
+  ruleflow-group "match"
+  salience -10
+  lock-on-active true
+  when
+   not Respuesta()
+  	
+  then
+    pantalla( "No se pudo derivar una respuesta");
+end
