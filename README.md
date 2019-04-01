@@ -1,4 +1,4 @@
-#Drool demo using IntelliJIDEA
+# Drool demo using IntelliJIDEA
 
 This project has been built in order to make it easy for somebody who wants to use Drools in IntelliJIDEA.
 
